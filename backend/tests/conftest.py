@@ -1,15 +1,16 @@
 import os
 import tempfile
 
+# Tests use a throwaway SQLite file. Set TEST_DATABASE_URL to run them against MySQL instead.
 _db_file = os.path.join(tempfile.mkdtemp(), "test.db")
-os.environ["DATABASE_URL"] = f"sqlite:///{_db_file}"
+os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL", f"sqlite:///{_db_file}")
 os.environ["SECRET_KEY"] = "test-secret-key-that-is-at-least-32-bytes"
 os.environ["ADMIN_PASSWORD"] = "admin-pass"
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
-from app.database import Base, SessionLocal, engine  # noqa: E402
+from app.database import Base, SessionLocal, engine, ensure_database  # noqa: E402
 from app.main import app  # noqa: E402
 from app.seed import seed  # noqa: E402
 
@@ -22,6 +23,7 @@ SITE = (5.6037, -0.1870)  # seeded example disposal site
 
 @pytest.fixture(autouse=True)
 def fresh_db():
+    ensure_database(os.environ["DATABASE_URL"])
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     with SessionLocal() as db:

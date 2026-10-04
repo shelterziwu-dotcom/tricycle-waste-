@@ -38,6 +38,22 @@ backend/                 Python API (FastAPI + SQLAlchemy)
 
 ## Running the backend
 
+### Windows with WAMP (easiest)
+
+WAMP's Apache **cannot** run this project (it only runs PHP). WAMP is used only for its MySQL database;
+the Python API runs in its own window.
+
+1. Install **Python 3.11+** from https://www.python.org/downloads/ and tick **"Add python.exe to PATH"**.
+2. Start **WAMP** and wait until its tray icon is **green** (MySQL running).
+3. Open the `backend` folder and double-click **`start.bat`**.
+   The first run creates a Python environment and installs packages (needs internet, takes a few minutes).
+4. Open **http://localhost:8000/docs** in your browser (note the `:8000`; plain `http://localhost` is WAMP's page).
+
+The `tricycle_waste` database and its tables are created automatically, so you will see them in phpMyAdmin.
+If your MySQL `root` user has a password, or you use WAMP's MariaDB (port 3307), edit `backend/.env`.
+
+### Any system (manual)
+
 Requires Python 3.11+.
 
 ```bash
@@ -45,19 +61,25 @@ cd backend
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env               # then edit SECRET_KEY etc.
+cp .env.example .env               # set DATABASE_URL (MySQL or SQLite) and SECRET_KEY
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 Open http://localhost:8000/docs to see and try every endpoint.
-Tables and default data (rubber sizes, prices, an example disposal site, an admin account)
-are created automatically on first start. Use `--host 0.0.0.0` so a phone on the same Wi-Fi can reach it.
+Default data (rubber sizes, prices, an example disposal site, an admin account) is created on first start.
+`--host 0.0.0.0` lets a phone on the same Wi-Fi reach the API at `http://<your-PC-IP>:8000`.
 
-Run the tests:
+### Trying it in the browser
+
+On the `/docs` page, use **POST /auth/login** with phone `0000000000` and the admin password from `.env`,
+copy the `token`, click **Authorize** (top right) and paste it. Then try any endpoint with **Try it out**.
+
+### Tests
 
 ```bash
 cd backend
-pytest
+pytest                                                          # SQLite
+TEST_DATABASE_URL=mysql+pymysql://root:@localhost/tricycle_test pytest   # MySQL
 ```
 
 ## Main API endpoints

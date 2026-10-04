@@ -3,7 +3,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.database import Base, SessionLocal, engine
+from app.config import get_settings
+from app.database import Base, SessionLocal, engine, ensure_database
 from app.realtime import manager
 from app.routers import admin, auth, collector, pickups, reports
 from app.security import user_from_token
@@ -12,6 +13,7 @@ from app.seed import seed
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    ensure_database(get_settings().database_url)
     Base.metadata.create_all(engine)
     with SessionLocal() as db:
         seed(db)
