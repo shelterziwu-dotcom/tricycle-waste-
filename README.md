@@ -47,7 +47,11 @@ the Python API runs in its own window.
 2. Start **WAMP** and wait until its tray icon is **green** (MySQL running).
 3. Open the `backend` folder and double-click **`start.bat`**.
    The first run creates a Python environment and installs packages (needs internet, takes a few minutes).
-4. Open **http://localhost:8000/docs** in your browser (note the `:8000`; plain `http://localhost` is WAMP's page).
+4. Open **http://localhost:8000** in your browser for the **admin dashboard** (note the `:8000`;
+   plain `http://localhost` is WAMP's page). Sign in with phone `0000000000` and the `ADMIN_PASSWORD` from `.env`
+   (default `change-me-admin`). The API documentation is at http://localhost:8000/docs.
+5. To see the system in action, keep `start.bat` running and double-click **`simulate.bat`**: sample collectors
+   drive around Accra, take jobs, fill up and go to disposal sites while the dashboard map updates.
 
 The `tricycle_waste` database and its tables are created automatically, so you will see them in phpMyAdmin.
 If your MySQL `root` user has a password, or you use WAMP's MariaDB (port 3307), edit `backend/.env`.
@@ -68,6 +72,25 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 Open http://localhost:8000/docs to see and try every endpoint.
 Default data (rubber sizes, prices, an example disposal site, an admin account) is created on first start.
 `--host 0.0.0.0` lets a phone on the same Wi-Fi reach the API at `http://<your-PC-IP>:8000`.
+
+### Admin dashboard
+
+http://localhost:8000/dashboard (served by the API, no extra installation):
+
+- **Overview**: key figures (including disposal compliance) and a live map of tricycles coloured by load
+  (empty / partly loaded / nearly full / full), waiting pickups, dumping reports and disposal-site geofences
+- **Collectors**: verify new collectors and set each tricycle's capacity in load units
+- **Pickups**: latest requests with rubbers, units and prices
+- **Pricing**: edit rates and waste-type factors, with a price checker
+- **Disposal sites**: add sites by clicking the map, activate or deactivate them
+- **Dumping reports**: review and update reports from residents
+
+### Live simulation
+
+`python simulate.py` (or `simulate.bat`) drives sample users and collectors through the real API.
+It adds sample accounts (phones starting 0209 / 0509) and two sample disposal sites to the database in use.
+Options: `--collectors 8 --users 20 --minutes 10 --tick 1`. Useful for demos and for the evaluation chapter
+(e.g. compliance and waiting figures over a simulated period).
 
 ### See a complete pickup in one go
 
@@ -117,5 +140,6 @@ TEST_DATABASE_URL=mysql+pymysql://root:@localhost/tricycle_test pytest   # MySQL
 - [x] Live updates over WebSocket
 - [x] Automated tests
 - [ ] Flutter mobile app (users and collectors)
-- [ ] Admin web dashboard
+- [x] Admin web dashboard with live map
+- [x] Live simulation for demos
 - [ ] Photo upload storage, real mobile money gateway, USSD, rubber-detection model

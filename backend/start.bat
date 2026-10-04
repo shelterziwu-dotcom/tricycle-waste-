@@ -36,7 +36,8 @@ if not exist ".env" (
 echo.
 echo  ================================================================
 echo   TriCycle Waste API is starting. Make sure WAMP is running (green).
-echo   Open in your browser:  http://localhost:8000/docs
+echo   Admin dashboard:  http://localhost:8000/dashboard
+echo   API documentation: http://localhost:8000/docs
 echo   Keep this window open. Press Ctrl+C to stop.
 echo  ================================================================
 echo.

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TriCycle Waste Admin</title>
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Login -->
+  <section id="login-view" class="login-wrap" hidden>
+    <form id="login-form" class="login-card">
+      <div class="brand"><span class="logo">TW</span> TriCycle Waste</div>
+      <p class="muted">Administrator sign in</p>
+      <label>Phone number<input name="phone" value="0000000000" required autocomplete="username"></label>
+      <label>Password<input name="password" type="password" required autocomplete="current-password"></label>
+      <button type="submit">Sign in</button>
+      <p id="login-error" class="error" role="alert"></p>
+    </form>
+  </section>
+
+  <!-- App -->
+  <div id="app-view" class="layout" hidden>
+    <nav class="sidebar">
+      <div class="brand"><span class="logo">TW</span> TriCycle Waste</div>
+      <a href="#overview" data-view="overview">Overview</a>
+      <a href="#collectors" data-view="collectors">Collectors</a>
+      <a href="#pickups" data-view="pickups">Pickups</a>
+      <a href="#pricing" data-view="pricing">Pricing</a>
+      <a href="#sites" data-view="sites">Disposal sites</a>
+      <a href="#reports" data-view="reports">Dumping reports</a>
+      <div class="sidebar-foot">
+        <span id="refresh-note" class="muted small"></span>
+        <button id="logout" class="ghost">Sign out</button>
+      </div>
+    </nav>
+
+    <main>
+      <!-- Overview -->
+      <section data-section="overview">
+        <header class="page-head"><h1>Overview</h1><p class="muted">Live state of collection, tricycle loads and disposal</p></header>
+        <div id="stats" class="stats"></div>
+        <div class="panel map-panel">
+          <div class="panel-head">
+            <h2>Live map</h2>
+            <div class="legend">
+              <span><i class="dot s-empty"></i>Empty</span>
+              <span><i class="dot s-partly_loaded"></i>Partly loaded</span>
+              <span><i class="dot s-nearly_full"></i>Nearly full</span>
+              <span><i class="dot s-full"></i>Full</span>
+              <span><i class="dot pickup"></i>Waiting pickup</span>
+              <span><i class="dot report"></i>Dumping report</span>
+              <span><i class="ring"></i>Disposal site</span>
+            </div>
+          </div>
+          <div id="map" class="map"></div>
+        </div>
+        <div class="panel">
+          <h2>Tricycles on the road</h2>
+          <div id="live-list" class="load-list"></div>
+        </div>
+      </section>
+
+      <!-- Collectors -->
+      <section data-section="collectors" hidden>
+        <header class="page-head"><h1>Collectors</h1><p class="muted">Verify new collectors and record each tricycle's capacity in load units</p></header>
+        <div class="panel"><table><thead><tr>
+          <th>Name</th><th>Tricycle</th><th>Status</th><th>Load</th><th>Capacity (units)</th><th>Verification</th>
+        </tr></thead><tbody id="collectors-body"></tbody></table></div>
+      </section>
+
+      <!-- Pickups -->
+      <section data-section="pickups" hidden>
+        <header class="page-head"><h1>Pickups</h1><p class="muted">Latest 100 pickup requests</p></header>
+        <div class="panel"><table><thead><tr>
+          <th>#</th><th>Created</th><th>Status</th><th>Waste</th><th>Rubbers</th><th>Units</th><th>Price (GH₵)</th><th>Collector</th>
+        </tr></thead><tbody id="pickups-body"></tbody></table></div>
+      </section>
+
+      <!-- Pricing -->
+      <section data-section="pricing" hidden>
+        <header class="page-head"><h1>Pricing</h1><p class="muted">Price = base fee + units × rate per unit × waste-type factor + distance charge beyond the free radius</p></header>
+        <div class="two-col">
+          <form id="pricing-form" class="panel form">
+            <h2>Rates</h2>
+            <label>Base fee (GH₵)<input name="base_fee" type="number" step="0.01" min="0" required></label>
+            <label>Rate per load unit (GH₵)<input name="rate_per_unit" type="number" step="0.01" min="0" required></label>
+            <label>Rate per km beyond free radius (GH₵)<input name="rate_per_km" type="number" step="0.01" min="0" required></label>
+            <label>Free radius (km)<input name="free_radius_km" type="number" step="0.1" min="0" required></label>
+            <h3>Waste-type factors</h3>
+            <div id="factor-fields" class="factor-grid"></div>
+            <button type="submit">Save prices</button>
+            <p id="pricing-msg" class="muted" role="status"></p>
+          </form>
+          <div class="panel form">
+            <h2>Price check</h2>
+            <p class="muted small">Try a pickup with the rates on the left (before saving).</p>
+            <div id="calc-sizes" class="factor-grid"></div>
+            <label>Waste type<select id="calc-type"></select></label>
+            <label>Distance from collector (km)<input id="calc-km" type="number" step="0.1" min="0" value="1.5"></label>
+            <div id="calc-result" class="calc-result"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Disposal sites -->
+      <section data-section="sites" hidden>
+        <header class="page-head"><h1>Disposal sites</h1><p class="muted">Collectors can only empty their tricycle by checking in inside one of these geofences</p></header>
+        <div class="two-col">
+          <div class="panel"><div id="sites-map" class="map small-map"></div><p class="muted small">Click the map to fill in the location of a new site.</p></div>
+          <form id="site-form" class="panel form">
+            <h2>Add a site</h2>
+            <label>Name<input name="name" required maxlength="100"></label>
+            <div class="row">
+              <label>Latitude<input name="lat" type="number" step="any" required></label>
+              <label>Longitude<input name="lng" type="number" step="any" required></label>
+            </div>
+            <label>Geofence radius (m)<input name="radius_m" type="number" min="10" max="2000" value="150" required></label>
+            <button type="submit">Add site</button>
+          </form>
+        </div>
+        <div class="panel"><table><thead><tr><th>Name</th><th>Location</th><th>Radius</th><th>Status</th><th></th></tr></thead>
+          <tbody id="sites-body"></tbody></table></div>
+      </section>
+
+      <!-- Reports -->
+      <section data-section="reports" hidden>
+        <header class="page-head"><h1>Illegal dumping reports</h1><p class="muted">Reported by residents with a photo and location</p></header>
+        <div class="panel"><table><thead><tr><th>#</th><th>Reported</th><th>Location</th><th>Description</th><th>Photo</th><th>Status</th></tr></thead>
+          <tbody id="reports-body"></tbody></table></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

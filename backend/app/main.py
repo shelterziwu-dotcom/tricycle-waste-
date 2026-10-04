@@ -1,7 +1,10 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
 from app.database import Base, SessionLocal, engine, ensure_database
@@ -27,9 +30,18 @@ for r in (auth.router, pickups.router, collector.router, collector.sites_router,
     app.include_router(r)
 
 
-@app.get("/")
+DASHBOARD_DIR = Path(__file__).resolve().parent.parent / "dashboard"
+app.mount("/dashboard", StaticFiles(directory=DASHBOARD_DIR, html=True), name="dashboard")
+
+
+@app.get("/", include_in_schema=False)
+def home():
+    return RedirectResponse("/dashboard/")
+
+
+@app.get("/health")
 def health():
-    return {"name": "TriCycle Waste API", "status": "ok", "docs": "/docs"}
+    return {"name": "TriCycle Waste API", "status": "ok", "dashboard": "/dashboard/", "docs": "/docs"}
 
 
 @app.websocket("/ws")

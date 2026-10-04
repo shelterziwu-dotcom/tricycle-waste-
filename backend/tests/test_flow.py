@@ -183,3 +183,11 @@ def test_collector_receives_live_job_offer(client, make_user, make_collector):
     assert event["type"] == "job_offer"
     assert event["request_id"] == pickup["id"]
     assert event["units"] == 6
+
+
+def test_dashboard_is_served(client):
+    r = client.get("/", follow_redirects=False)
+    assert r.status_code == 307 and r.headers["location"] == "/dashboard/"
+    page = client.get("/dashboard/")
+    assert page.status_code == 200 and "TriCycle Waste Admin" in page.text
+    assert client.get("/dashboard/vendor/leaflet/leaflet.js").status_code == 200
