@@ -69,6 +69,12 @@ Open http://localhost:8000/docs to see and try every endpoint.
 Default data (rubber sizes, prices, an example disposal site, an admin account) is created on first start.
 `--host 0.0.0.0` lets a phone on the same Wi-Fi reach the API at `http://<your-PC-IP>:8000`.
 
+### See a complete pickup in one go
+
+Double-click **`backend/demo.bat`** (or run `python demo.py`). It plays a whole story using a temporary
+database: rubber-based quote, matching, collection, a full tricycle being skipped, a refused and a verified
+disposal check-in, and the admin figures.
+
 ### Trying it in the browser
 
 On the `/docs` page, use **POST /auth/login** with phone `0000000000` and the admin password from `.env`,
