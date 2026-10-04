@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from app.config import get_settings
 from app.database import Base, SessionLocal, engine, ensure_database
 from app.realtime import manager
-from app.routers import admin, auth, collector, pickups, reports
+from app.routers import admin, auth, collector, pickups, reports, uploads
 from app.security import user_from_token
 from app.seed import seed
 
@@ -26,12 +26,15 @@ async def lifespan(_: FastAPI):
 app = FastAPI(title="TriCycle Waste API", version="0.1.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-for r in (auth.router, pickups.router, collector.router, collector.sites_router, admin.router, reports.router):
+for r in (auth.router, pickups.router, collector.router, collector.sites_router, admin.router, reports.router,
+          uploads.router):
     app.include_router(r)
 
 
 DASHBOARD_DIR = Path(__file__).resolve().parent.parent / "dashboard"
 app.mount("/dashboard", StaticFiles(directory=DASHBOARD_DIR, html=True), name="dashboard")
+uploads.UPLOAD_DIR.mkdir(exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=uploads.UPLOAD_DIR), name="uploads")
 
 
 @app.get("/", include_in_schema=False)

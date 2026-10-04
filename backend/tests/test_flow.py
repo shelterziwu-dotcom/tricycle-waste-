@@ -191,3 +191,14 @@ def test_dashboard_is_served(client):
     page = client.get("/dashboard/")
     assert page.status_code == 200 and "TriCycle Waste Admin" in page.text
     assert client.get("/dashboard/vendor/leaflet/leaflet.js").status_code == 200
+
+
+def test_photo_upload(client, make_user):
+    user = make_user()
+    jpeg = b"\xff\xd8\xff\xe0" + b"0" * 100
+    r = client.post("/uploads", headers=user, files={"file": ("rubbers.jpg", jpeg, "image/jpeg")})
+    assert r.status_code == 201
+    url = r.json()["url"]
+    assert client.get(url).content == jpeg
+    bad = client.post("/uploads", headers=user, files={"file": ("x.txt", b"hello", "text/plain")})
+    assert bad.status_code == 415
