@@ -111,6 +111,48 @@ pytest                                                          # SQLite
 TEST_DATABASE_URL=mysql+pymysql://root:@localhost/tricycle_test pytest   # MySQL
 ```
 
+## Running the mobile app (Flutter)
+
+The app in `mobile/` has two modes, chosen by the account type:
+
+- **Household / shop:** book a pickup by tapping rubbers (price shown upfront), track the collector on a map,
+  approve a changed count, pay (test mode), rate, report illegal dumping.
+- **Tricycle collector:** go online, see the load meter (Empty → Full), accept or decline job offers with a
+  30-second countdown, count rubbers and take a photo, and check in at a disposal site to empty the tricycle.
+
+### One-time setup (Windows)
+
+1. Install **Flutter**: https://docs.flutter.dev/get-started/install/windows/mobile (follow "Android" setup).
+2. Install **Android Studio** (the Flutter guide links it), then in Android Studio open
+   **More Actions → Virtual Device Manager → Create device** (e.g. Pixel 7) to get an emulator.
+3. In a terminal: `flutter doctor` until Android shows a green tick.
+
+### Run it
+
+1. Start the backend (`backend\start.bat`) and keep it running.
+2. In a terminal:
+   ```
+   cd mobile
+   flutter pub get
+   flutter run
+   ```
+   Pick the emulator (or a phone connected by USB with developer mode on).
+3. On the first screen, enter the **server address**:
+   - Android emulator on the same laptop: `http://10.0.2.2:8000`
+   - Real phone: same Wi-Fi as the laptop, and the address printed by `start.bat`
+     (e.g. `http://192.168.1.20:8000`). If it can't connect, allow Python through Windows Firewall
+     for private networks.
+4. Create a household account, and a collector account. Verify the collector and set its capacity on the
+   dashboard (Collectors page) before it can go online.
+
+### Demo tips
+
+- To show a disposal check-in on the emulator, move the emulator's location to the site:
+  emulator **⋮ (Extended controls) → Location**, search or enter the site's coordinates, **Set location**.
+  Checking in from anywhere else is refused, which is the point.
+- Run the household and collector on two devices (emulator + phone), or log out and in to switch.
+- `flutter build apk --release` creates an installable APK in `mobile/build/app/outputs/flutter-apk/`.
+
 ## Main API endpoints
 
 | Who | Endpoint | Purpose |
@@ -139,7 +181,8 @@ TEST_DATABASE_URL=mysql+pymysql://root:@localhost/tricycle_test pytest   # MySQL
 - [x] Backend API with pricing, load tracking, matching, disposal verification, dumping reports, admin tools
 - [x] Live updates over WebSocket
 - [x] Automated tests
-- [ ] Flutter mobile app (users and collectors)
+- [x] Flutter mobile app (users and collectors)
 - [x] Admin web dashboard with live map
 - [x] Live simulation for demos
-- [ ] Photo upload storage, real mobile money gateway, USSD, rubber-detection model
+- [x] Photo uploads
+- [ ] Real mobile money gateway, USSD, rubber-detection model

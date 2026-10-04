@@ -1,9 +1,11 @@
+import socket
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
@@ -14,12 +16,26 @@ from app.security import user_from_token
 from app.seed import seed
 
 
+def lan_address() -> str | None:
+    """This computer's Wi-Fi address, for phones on the same network."""
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("8.8.8.8", 80))  # no data is sent; this just picks the network interface
+            return s.getsockname()[0]
+    except OSError:
+        return None
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     ensure_database(get_settings().database_url)
     Base.metadata.create_all(engine)
     with SessionLocal() as db:
         seed(db)
+    ip = lan_address()
+    print("\n  Admin dashboard:      http://localhost:8000/dashboard")
+    if ip:
+        print(f"  Server address for the phone app (same Wi-Fi): http://{ip}:8000\n")
     yield
 
 
@@ -29,6 +45,20 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 for r in (auth.router, pickups.router, collector.router, collector.sites_router, admin.router, reports.router,
           uploads.router):
     app.include_router(r)
+
+
+@app.exception_handler(RequestValidationError)
+async def friendly_validation_error(_: Request, exc: RequestValidationError):
+    """Turn form errors into one plain sentence, e.g. 'Password must have at least 6 characters'."""
+    messages = []
+    for err in exc.errors():
+        field = next((str(p) for p in reversed(err.get("loc", ())) if isinstance(p, str) and p != "body"), "")
+        label = field.replace("_", " ").capitalize() or "Value"
+        msg = err.get("msg", "is not valid")
+        msg = (msg.replace("String should have", "must have").replace("Value should", "must")
+               .replace("Input should be", "must be").replace("Field required", "is required"))
+        messages.append(f"{label} {msg[0].lower()}{msg[1:]}" if msg else label)
+    return JSONResponse(status_code=422, content={"detail": ". ".join(dict.fromkeys(messages))})
 
 
 DASHBOARD_DIR = Path(__file__).resolve().parent.parent / "dashboard"

@@ -202,3 +202,9 @@ def test_photo_upload(client, make_user):
     assert client.get(url).content == jpeg
     bad = client.post("/uploads", headers=user, files={"file": ("x.txt", b"hello", "text/plain")})
     assert bad.status_code == 415
+
+
+def test_validation_errors_are_plain_sentences(client):
+    r = client.post("/auth/register", json={"name": "Ama", "phone": "0241111111", "password": "123"})
+    assert r.status_code == 422
+    assert r.json()["detail"] == "Password must have at least 6 characters"
