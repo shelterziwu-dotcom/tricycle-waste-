@@ -116,6 +116,7 @@ class PickupRequest(Base):
     declared_units: Mapped[int] = mapped_column(Integer)
     confirmed_units: Mapped[int | None] = mapped_column(Integer)
     quoted_price: Mapped[Decimal] = mapped_column(Money)
+    quote_distance_km: Mapped[float] = mapped_column(Float, default=0)
     proposed_price: Mapped[Decimal | None] = mapped_column(Money)
     final_price: Mapped[Decimal | None] = mapped_column(Money)
     status: Mapped[str] = mapped_column(String(20), default=RequestStatus.SEARCHING, index=True)
