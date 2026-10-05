@@ -111,6 +111,13 @@ pytest                                                          # SQLite
 TEST_DATABASE_URL=mysql+pymysql://root:@localhost/tricycle_test pytest   # MySQL
 ```
 
+## Using the app without installing Flutter
+
+The backend also serves a browser version of the app at **http://localhost:8000/app** (open it while
+`start.bat` is running). It is the same Flutter app, compiled for the web. Use two browser windows (or a normal
+and a private window) to be a household and a collector at the same time. Allow location when asked; for
+photos use the **Gallery** button. After changing the app's code, rebuild it with `mobile\build_web.bat`.
+
 ## Running the mobile app (Flutter)
 
 The app in `mobile/` has two modes, chosen by the account type:

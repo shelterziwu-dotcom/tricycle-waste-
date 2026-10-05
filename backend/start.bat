@@ -37,6 +37,7 @@ echo.
 echo  ================================================================
 echo   TriCycle Waste API is starting. Make sure WAMP is running (green).
 echo   Admin dashboard:  http://localhost:8000/dashboard
+echo   App in the browser: http://localhost:8000/app
 echo   API documentation: http://localhost:8000/docs
 echo   Keep this window open. Press Ctrl+C to stop.
 echo  ================================================================

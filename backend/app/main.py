@@ -34,6 +34,7 @@ async def lifespan(_: FastAPI):
         seed(db)
     ip = lan_address()
     print("\n  Admin dashboard:      http://localhost:8000/dashboard")
+    print("  App in the browser:   http://localhost:8000/app")
     if ip:
         print(f"  Server address for the phone app (same Wi-Fi): http://{ip}:8000\n")
     yield
@@ -63,6 +64,11 @@ async def friendly_validation_error(_: Request, exc: RequestValidationError):
 
 DASHBOARD_DIR = Path(__file__).resolve().parent.parent / "dashboard"
 app.mount("/dashboard", StaticFiles(directory=DASHBOARD_DIR, html=True), name="dashboard")
+# Browser version of the mobile app (built with: flutter build web --base-href /app/), for demos
+# on a laptop without Flutter or a phone. Rebuild and copy with mobile/build_web.bat after app changes.
+WEBAPP_DIR = Path(__file__).resolve().parent.parent / "webapp"
+if WEBAPP_DIR.is_dir():
+    app.mount("/app", StaticFiles(directory=WEBAPP_DIR, html=True), name="webapp")
 uploads.UPLOAD_DIR.mkdir(exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=uploads.UPLOAD_DIR), name="uploads")
 

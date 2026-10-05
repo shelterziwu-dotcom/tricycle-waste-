@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'screens/collector/collector_home.dart';
@@ -21,6 +22,13 @@ class TriCycleApp extends StatelessWidget {
         title: 'TriCycle Waste',
         theme: appTheme(),
         debugShowCheckedModeBanner: false,
+        // In a laptop browser, show the app at phone width instead of stretching it.
+        builder: (context, child) => kIsWeb
+            ? ColoredBox(
+                color: const Color(0xFF1E3A2B),
+                child: Center(child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 460), child: child)),
+              )
+            : child!,
         home: ListenableBuilder(listenable: session, builder: (context, _) => _home()),
       );
 

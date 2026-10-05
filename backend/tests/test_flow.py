@@ -208,3 +208,8 @@ def test_validation_errors_are_plain_sentences(client):
     r = client.post("/auth/register", json={"name": "Ama", "phone": "0241111111", "password": "123"})
     assert r.status_code == 422
     assert r.json()["detail"] == "Password must have at least 6 characters"
+
+
+def test_browser_app_is_served(client):
+    page = client.get("/app/")
+    assert page.status_code == 200 and "main.dart.js" in client.get("/app/flutter_bootstrap.js").text

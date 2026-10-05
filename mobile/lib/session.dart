@@ -24,6 +24,11 @@ class Session extends ChangeNotifier {
     final p = await SharedPreferences.getInstance();
     serverUrl = p.getString('server_url') ?? defaultServer;
     serverConfirmed = p.getBool('server_confirmed') ?? false;
+    // The browser version served by the backend at /app talks to that same server.
+    if (kIsWeb && Uri.base.path.startsWith('/app')) {
+      serverUrl = Uri.base.origin;
+      serverConfirmed = true;
+    }
     token = p.getString('token');
     role = p.getString('role');
     name = p.getString('name');
